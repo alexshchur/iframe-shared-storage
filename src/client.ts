@@ -5,11 +5,10 @@ type ClientOptions = {
 };
 
 export function constructClient(options?: ClientOptions): Client {
+  console.log("constructClient options:", options);
   const clientService = {
     "localStorage.setItem": (key: string, value: string) => {
-      debugger;
       const fn = caller("localStorage.setItem", options);
-      debugger;
       return fn(key, value);
     },
     "localStorage.getItem": (key: string) => {

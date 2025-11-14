@@ -5,6 +5,7 @@ type HubOptions = {
 
 type Hub = {};
 export function constructHub(options: HubOptions = {}): Hub {
+  console.log("constructHub options:", options);
   const hubService = {
     "localStorage.setItem": (key: string, value: string) => {
       return localStorage.setItem(key, value);
