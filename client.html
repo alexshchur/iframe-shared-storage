@@ -16,7 +16,7 @@
     console.log('client constructed:', client);
 
     async function main() {
-        await client['localStorage.setItem']('foo', 'bar');
+        await client['localStorage.setItem']('foo', 'bar ' + Math.random());
         const value = await client['localStorage.getItem']('foo');
         console.log('Got value from hub:', value);
     }    
