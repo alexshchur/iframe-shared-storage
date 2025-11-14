@@ -11,7 +11,7 @@
     <div>Hub Page</div>
     <script src="dist/browser.js"></script>
     <script>
-        const postMessageFn = window.parent.postMessage;
+        const postMessageFn = window.parent.postMessage.bind(window.parent);
         const hub = IframeStorage.constructHub({
             postMessage: postMessageFn
         });
