@@ -1,24 +1,32 @@
-import { call } from "postmsg-rpc";
+import { caller } from "postmsg-rpc";
 type Client = {};
 type ClientOptions = {
-  hubUrl?: string;
+  postMessage?: typeof window.postMessage;
 };
-export function constructClient(options: ClientOptions = {}): Client {
+
+export function constructClient(options?: ClientOptions): Client {
   const clientService = {
     "localStorage.setItem": (key: string, value: string) => {
-      return call("localStorage.setItem", key, value);
+      debugger;
+      const fn = caller("localStorage.setItem", options);
+      debugger;
+      return fn(key, value);
     },
     "localStorage.getItem": (key: string) => {
-      return call("localStorage.getItem", key);
+      const fn = caller("localStorage.getItem", options);
+      return fn(key);
     },
     "localStorage.removeItem": (key: string) => {
-      return call("localStorage.removeItem", key);
+      const fn = caller("localStorage.removeItem", options);
+      return fn(key);
     },
     "localStorage.clear": () => {
-      return call("localStorage.clear");
+      const fn = caller("localStorage.clear", options);
+      return fn();
     },
     "localStorage.key": (index: number) => {
-      return call("localStorage.key", index);
+      const fn = caller("localStorage.key", options);
+      return fn(index);
     },
   };
   return {

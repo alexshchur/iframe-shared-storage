@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build:watch": "esbuild src/index.ts --watch --bundle --format=iife --global-name=IframeStorage --outfile=dist/browser.js"
+    "build": "esbuild src/index.ts --bundle --format=iife --global-name=IframeStorage --outfile=dist/browser.js",
+    "build:watch": "esbuild src/index.ts --watch --bundle --format=iife --global-name=IframeStorage --outfile=dist/browser.js",
+    "serve:client": "node scripts/server.js --file client.html --port 5100 --host 0.0.0.0",
+    "serve:hub": "node scripts/server.js --file hub.html --port 5101 --host 0.0.0.0"
   },
   "author": "",
   "license": "ISC",

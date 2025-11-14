@@ -1,6 +1,6 @@
 import { expose } from "postmsg-rpc";
 type HubOptions = {
-  url?: string;
+  postMessage?: typeof window.postMessage;
 };
 
 type Hub = {};
@@ -24,7 +24,7 @@ export function constructHub(options: HubOptions = {}): Hub {
   };
 
   for (const [methodName, methodImpl] of Object.entries(hubService)) {
-    expose(methodName, methodImpl);
+    expose(methodName, methodImpl, options);
   }
   return {};
 }

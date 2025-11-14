@@ -20,4 +20,9 @@ declare module "postmsg-rpc" {
   ): T;
 
   export function call<T = any>(name: string, ...args: any[]): Promise<T>;
+
+  export function caller<T = any>(
+    name: string,
+    options?: { postMessage?: typeof window.postMessage }
+  ): (...args: any[]) => Promise<T>;
 }
