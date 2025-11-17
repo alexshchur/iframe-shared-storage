@@ -1,34 +1,28 @@
 import { caller } from "postmsg-rpc";
-type Client = {};
+type Client = {
+  localStorage: {
+    setItem: (key: string, value: string) => Promise<void>;
+    getItem: (key: string) => Promise<string | null>;
+    removeItem: (key: string) => Promise<void>;
+    clear: () => Promise<void>;
+    key: (index: number) => Promise<string | null>;
+  };
+};
 type ClientOptions = {
   postMessage?: typeof window.postMessage;
 };
 
 export function constructClient(options?: ClientOptions): Client {
-  console.log("constructClient options:", options);
-  const clientService = {
-    "localStorage.setItem": (key: string, value: string) => {
-      const fn = caller("localStorage.setItem", options);
-      return fn(key, value);
-    },
-    "localStorage.getItem": (key: string) => {
-      const fn = caller("localStorage.getItem", options);
-      return fn(key);
-    },
-    "localStorage.removeItem": (key: string) => {
-      const fn = caller("localStorage.removeItem", options);
-      return fn(key);
-    },
-    "localStorage.clear": () => {
-      const fn = caller("localStorage.clear", options);
-      return fn();
-    },
-    "localStorage.key": (index: number) => {
-      const fn = caller("localStorage.key", options);
-      return fn(index);
-    },
-  };
   return {
-    ...clientService,
+    localStorage: {
+      setItem: (key: string, value: string) =>
+        caller("localStorage.setItem", options)(key, value),
+      getItem: (key: string) => caller("localStorage.getItem", options)(key),
+
+      removeItem: (key: string) =>
+        caller("localStorage.removeItem", options)(key),
+      clear: () => caller("localStorage.clear", options)(),
+      key: (index: number) => caller("localStorage.key", options)(index),
+    },
   };
 }

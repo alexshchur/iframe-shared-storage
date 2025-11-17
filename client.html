@@ -1,28 +1,24 @@
 <div>
     <div>Client Page</div>
 </div>
-<!-- <script src="./dist/hub.js"></script> -->
 <iframe src="http://iframehub.com:5101/" id="iframe-storage-hub"></iframe>
 <script src="dist/browser.js"></script>
 <script type="text/javascript">
 
-    // const hub = IframeStorage.constructHub();    
-    // console.log('hub constructed:', hub);
-    const postMessageFn = document.getElementById('iframe-storage-hub').contentWindow.postMessage
-    // debugger;
     const client = IframeStorage.constructClient({
-        postMessage: postMessageFn
+        postMessage: document.getElementById('iframe-storage-hub').contentWindow.postMessage
     });
     console.log('client constructed:', client);
 
-    async function main() {
-        await client['localStorage.setItem']('foo', 'bar ' + Math.random());
-        const value = await client['localStorage.getItem']('foo');
+    async function exampleSetAndGet() {
+        await client.localStorage.setItem('foo', 'bar ' + Math.random());
+        const value = await client.localStorage.getItem('foo');
         console.log('Got value from hub:', value);
     }
 
+    // for debug purposes
     addEventListener('message', (event) => {
         console.log('Client received message:', event.data);
     });
 </script>
-<button onclick="main()"> send </button>
+<button onclick="exampleSetAndGet()"> send </button>
