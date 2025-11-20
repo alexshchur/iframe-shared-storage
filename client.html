@@ -7,6 +7,7 @@
     const remoteOriginStorageclient = IframeStorage.constructClient({
         iframe: { src: 'http://iframehub.com:5101/', messagingOptions: { enableLog: true } }
     });
+
     console.log('client constructed:', remoteOriginStorageclient);
 
     async function exampleSetAndGet() {
@@ -19,9 +20,5 @@
         console.log('Got value from IndexedDB via hub:', idbValue);
     }
 
-    // for debug purposes
-    addEventListener('message', (event) => {
-        console.log('Client received message:', event.data);
-    });
 </script>
 <button onclick="exampleSetAndGet()"> send </button>

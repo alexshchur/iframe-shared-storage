@@ -1,6 +1,7 @@
 import { expose } from "postmsg-rpc";
 import { get, set, del } from "idb-keyval";
 import { MessagingOptions } from "./types";
+import { logIfEnabled } from "./log";
 
 export enum ApiMethods {
   LocalStorage_SetItem = "localStorage.setItem",
@@ -17,11 +18,6 @@ export enum ApiMethods {
 export function initHub() {
   if (!window?.parent)
     throw new Error("Hub must be run inside an iframe with a parent window.");
-
-  // for debug purposes
-  addEventListener("message", (event) => {
-    console.log("Hub received message:", event.data);
-  });
 
   const localStorageMethods = {
     [ApiMethods.LocalStorage_SetItem]: (
@@ -70,8 +66,20 @@ export function initHub() {
   };
 
   for (const [methodName, methodImpl] of Object.entries(hubService)) {
-    expose(methodName, methodImpl, {
-      postMessage: window.parent.postMessage.bind(window.parent),
-    });
+    expose(
+      methodName,
+      (...args: any[]) => {
+        // Avoid Array.prototype.at for broader lib compatibility.
+        const maybeOptions = args.length
+          ? (args[args.length - 1] as MessagingOptions | undefined)
+          : undefined;
+        const loggedArgs = maybeOptions ? args.slice(0, args.length - 1) : args;
+        logIfEnabled(maybeOptions, `hub:${methodName}`, loggedArgs);
+        return (methodImpl as any)(...args);
+      },
+      {
+        postMessage: window.parent.postMessage.bind(window.parent),
+      }
+    );
   }
 }

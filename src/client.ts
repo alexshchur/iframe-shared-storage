@@ -1,6 +1,7 @@
 import { caller } from "postmsg-rpc";
 import { ApiMethods } from "./hub";
 import { MessagingOptions } from "./types";
+import { logIfEnabled } from "./log";
 type Client = {
   localStorage: {
     setItem: (key: string, value: string) => Promise<void>;
@@ -31,56 +32,27 @@ export function constructClient({
   const postMessage = createIframePostMessage(iframeSrc);
   const callerOptions = { postMessage };
 
+  // Unified dynamic caller to reduce repetition.
+  const call = (method: ApiMethods, ...args: any[]) => {
+    logIfEnabled(messagingOptions, `client:${method}`, args);
+    return caller(method, callerOptions)(...args, messagingOptions);
+  };
+
   return {
     localStorage: {
       setItem: (key: string, value: string) =>
-        caller(ApiMethods.LocalStorage_SetItem, callerOptions)(
-          key,
-          value,
-          messagingOptions
-        ),
-
-      getItem: (key: string) =>
-        caller(ApiMethods.LocalStorage_GetItem, callerOptions)(
-          key,
-          messagingOptions
-        ),
-
+        call(ApiMethods.LocalStorage_SetItem, key, value),
+      getItem: (key: string) => call(ApiMethods.LocalStorage_GetItem, key),
       removeItem: (key: string) =>
-        caller(ApiMethods.LocalStorage_RemoveItem, callerOptions)(
-          key,
-          messagingOptions
-        ),
-
-      clear: () =>
-        caller(ApiMethods.LocalStorage_Clear, callerOptions)(messagingOptions),
-
-      key: (index: number) =>
-        caller(ApiMethods.LocalStorage_Key, callerOptions)(
-          index,
-          messagingOptions
-        ),
+        call(ApiMethods.LocalStorage_RemoveItem, key),
+      clear: () => call(ApiMethods.LocalStorage_Clear),
+      key: (index: number) => call(ApiMethods.LocalStorage_Key, index),
     },
-
     indexedDBKeyval: {
       set: (key: string, value: string) =>
-        caller(ApiMethods.indexDBKeyval_Set, callerOptions)(
-          key,
-          value,
-          messagingOptions
-        ),
-
-      get: (key: string) =>
-        caller(ApiMethods.indexDBKeyval_Get, callerOptions)(
-          key,
-          messagingOptions
-        ),
-
-      del: (key: string) =>
-        caller(ApiMethods.indexDBKeyval_Del, callerOptions)(
-          key,
-          messagingOptions
-        ),
+        call(ApiMethods.indexDBKeyval_Set, key, value),
+      get: (key: string) => call(ApiMethods.indexDBKeyval_Get, key),
+      del: (key: string) => call(ApiMethods.indexDBKeyval_Del, key),
     },
   };
 }
