@@ -20,16 +20,20 @@ type Client = {
 
 const DEFAULT_IFRAME_ID = "iframe-storage-hub";
 type ClientOptions = {
-  iframe: {
-    src: string;
-    messagingOptions?: MessagingOptions;
-  };
+  iframe:
+    | {
+        src: string;
+        messagingOptions?: MessagingOptions;
+      }
+    | {
+        id: string;
+        messagingOptions?: MessagingOptions;
+      };
 };
 
-export function constructClient({
-  iframe: { src: iframeSrc, messagingOptions },
-}: ClientOptions): Client {
-  const postMessage = createIframePostMessage(iframeSrc);
+export function constructClient({ iframe }: ClientOptions): Client {
+  const { messagingOptions } = iframe;
+  const postMessage = createIframePostMessage(iframe);
   const callerOptions = { postMessage };
 
   // Unified dynamic caller to reduce repetition.
@@ -90,8 +94,13 @@ export function constructClient({
   };
 }
 
-function createIframePostMessage(iframeSrc: string): typeof window.postMessage {
-  const iframe = getOrCreateIframe(iframeSrc);
+function createIframePostMessage(
+  iframeOptions: ClientOptions["iframe"]
+): typeof window.postMessage {
+  const iframe =
+    "src" in iframeOptions
+      ? getOrCreateIframe(iframeOptions.src)
+      : getExistingIframe(iframeOptions.id);
   const { contentWindow } = iframe;
 
   if (!contentWindow) {
@@ -129,6 +138,24 @@ function getOrCreateIframe(iframeSrc: string): HTMLIFrameElement {
   }
 
   return iframe;
+}
+
+function getExistingIframe(iframeId: string): HTMLIFrameElement {
+  if (typeof document === "undefined") {
+    throw new Error("Cannot access iframe: document is not available.");
+  }
+
+  const existing = document.getElementById(iframeId);
+
+  if (!existing) {
+    throw new Error(`Iframe with id "${iframeId}" was not found.`);
+  }
+
+  if (!(existing instanceof HTMLIFrameElement)) {
+    throw new Error(`Element with id "${iframeId}" is not an iframe.`);
+  }
+
+  return existing;
 }
 
 function hideIframe(iframe: HTMLIFrameElement): void {
