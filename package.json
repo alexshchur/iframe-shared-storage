@@ -1,12 +1,14 @@
 {
   "name": "iframe-shared-storage",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "1.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --format=iife --global-name=IframeStorage --outfile=dist/browser.js",
     "build:watch": "esbuild src/index.ts --watch --bundle --format=iife --global-name=IframeStorage --outfile=dist/browser.js",
     "serve:client": "serve -l 5100 -n -c configs/serve.client.json .",
-    "serve:hub": "serve -l 5101 -n -c configs/serve.hub.json ."
+    "serve:hub": "serve -l 5101 -n -c configs/serve.hub.json .",
+    "prepublishOnly": "npm run build"
   },
   "author": "hi@alexeyshchur.com",
   "license": "ISC",
@@ -21,5 +23,8 @@
     "serve": "^14.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
