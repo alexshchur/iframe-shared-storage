@@ -13,7 +13,11 @@
     async function exampleSetAndGet() {
         await client.localStorage.setItem('foo', 'bar ' + Math.random());
         const value = await client.localStorage.getItem('foo');
-        console.log('Got value from hub:', value);
+        console.log('Got value localStorage via hub:', value);
+
+        await client.indexedDBKeyval.set('foo-indexed-db', 'value-indexed-db ' + Math.random());
+        const idbValue = await client.indexedDBKeyval.get('foo-indexed-db');
+        console.log('Got value from IndexedDB via hub:', idbValue);
     }
 
     // for debug purposes

@@ -8,6 +8,12 @@ type Client = {
     clear: () => Promise<void>;
     key: (index: number) => Promise<string | null>;
   };
+
+  indexedDBKeyval?: {
+    set: (key: string, value: string) => Promise<void>;
+    get: (key: string) => Promise<string | undefined>;
+    del: (key: string) => Promise<void>;
+  };
 };
 type ClientOptions = {
   postMessage?: typeof window.postMessage;
@@ -29,6 +35,15 @@ export function constructClient(options?: ClientOptions): Client {
 
       key: (index: number) =>
         caller(ApiMethods.LocalStorage_Key, options)(index),
+    },
+
+    indexedDBKeyval: {
+      set: (key: string, value: string) =>
+        caller(ApiMethods.indexDBKeyval_Set, options)(key, value),
+
+      get: (key: string) => caller(ApiMethods.indexDBKeyval_Get, options)(key),
+
+      del: (key: string) => caller(ApiMethods.indexDBKeyval_Del, options)(key),
     },
   };
 }

@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "idb-keyval": "^6.2.2",
     "postmsg-rpc": "^2.4.0"
   },
   "devDependencies": {
