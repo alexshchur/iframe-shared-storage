@@ -1,12 +1,11 @@
 <div>
     <div>Client Page</div>
 </div>
-<iframe src="http://iframehub.com:5101/" id="iframe-storage-hub"></iframe>
 <script src="dist/browser.js"></script>
 <script type="text/javascript">
 
     const client = IframeStorage.constructClient({
-        postMessage: document.getElementById('iframe-storage-hub').contentWindow.postMessage
+        iframe: { src: 'http://iframehub.com:5101/' }
     });
     console.log('client constructed:', client);
 

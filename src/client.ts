@@ -15,35 +15,96 @@ type Client = {
     del: (key: string) => Promise<void>;
   };
 };
+
+const DEFAULT_IFRAME_ID = "iframe-storage-hub";
 type ClientOptions = {
-  postMessage?: typeof window.postMessage;
+  iframe: {
+    src: string;
+  };
 };
 
-export function constructClient(options?: ClientOptions): Client {
+export function constructClient({
+  iframe: { src: iframeSrc },
+}: ClientOptions): Client {
+  const postMessage = createIframePostMessage(iframeSrc);
+  const callerOptions = { postMessage };
+
   return {
     localStorage: {
       setItem: (key: string, value: string) =>
-        caller(ApiMethods.LocalStorage_SetItem, options)(key, value),
+        caller(ApiMethods.LocalStorage_SetItem, callerOptions)(key, value),
 
       getItem: (key: string) =>
-        caller(ApiMethods.LocalStorage_GetItem, options)(key),
+        caller(ApiMethods.LocalStorage_GetItem, callerOptions)(key),
 
       removeItem: (key: string) =>
-        caller(ApiMethods.LocalStorage_RemoveItem, options)(key),
+        caller(ApiMethods.LocalStorage_RemoveItem, callerOptions)(key),
 
-      clear: () => caller(ApiMethods.LocalStorage_Clear, options)(),
+      clear: () => caller(ApiMethods.LocalStorage_Clear, callerOptions)(),
 
       key: (index: number) =>
-        caller(ApiMethods.LocalStorage_Key, options)(index),
+        caller(ApiMethods.LocalStorage_Key, callerOptions)(index),
     },
 
     indexedDBKeyval: {
       set: (key: string, value: string) =>
-        caller(ApiMethods.indexDBKeyval_Set, options)(key, value),
+        caller(ApiMethods.indexDBKeyval_Set, callerOptions)(key, value),
 
-      get: (key: string) => caller(ApiMethods.indexDBKeyval_Get, options)(key),
+      get: (key: string) =>
+        caller(ApiMethods.indexDBKeyval_Get, callerOptions)(key),
 
-      del: (key: string) => caller(ApiMethods.indexDBKeyval_Del, options)(key),
+      del: (key: string) =>
+        caller(ApiMethods.indexDBKeyval_Del, callerOptions)(key),
     },
   };
+}
+
+function createIframePostMessage(iframeSrc: string): typeof window.postMessage {
+  const iframe = getOrCreateIframe(iframeSrc);
+  const { contentWindow } = iframe;
+
+  if (!contentWindow) {
+    throw new Error("Injected iframe is missing a contentWindow reference.");
+  }
+
+  return contentWindow.postMessage.bind(contentWindow);
+}
+
+function getOrCreateIframe(iframeSrc: string): HTMLIFrameElement {
+  if (typeof document === "undefined") {
+    throw new Error("Cannot inject iframe: document is not available.");
+  }
+
+  const doc = document;
+  const existing = doc.getElementById(DEFAULT_IFRAME_ID);
+
+  if (existing && !(existing instanceof HTMLIFrameElement)) {
+    throw new Error(
+      `Element with id "${DEFAULT_IFRAME_ID}" already exists and is not an iframe.`
+    );
+  }
+
+  const iframe = existing ?? doc.createElement("iframe");
+  iframe.id = DEFAULT_IFRAME_ID;
+  iframe.src = iframeSrc;
+
+  if (!existing) {
+    hideIframe(iframe);
+    if (!doc.body) {
+      throw new Error("Cannot inject iframe: document.body is not available.");
+    }
+
+    doc.body.appendChild(iframe);
+  }
+
+  return iframe;
+}
+
+function hideIframe(iframe: HTMLIFrameElement): void {
+  iframe.style.position = "absolute";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  iframe.style.opacity = "0";
+  iframe.style.pointerEvents = "none";
 }
