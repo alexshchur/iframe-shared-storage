@@ -74,7 +74,7 @@ export function initHub() {
           ? (args[args.length - 1] as MessagingOptions | undefined)
           : undefined;
         const loggedArgs = maybeOptions ? args.slice(0, args.length - 1) : args;
-        logIfEnabled(maybeOptions, `hub:${methodName}`, loggedArgs);
+        logIfEnabled(maybeOptions, "hub", methodName, loggedArgs);
         return (methodImpl as any)(...args);
       },
       {

@@ -34,7 +34,7 @@ export function constructClient({
 
   // Unified dynamic caller to reduce repetition.
   const call = (method: ApiMethods, ...args: any[]) => {
-    logIfEnabled(messagingOptions, `client:${method}`, args);
+    logIfEnabled(messagingOptions, "client", method, args);
     return caller(method, callerOptions)(...args, messagingOptions);
   };
 

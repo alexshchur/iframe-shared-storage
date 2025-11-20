@@ -1,12 +1,18 @@
-import { MessagingOptions } from "./types";
+import { Domain, MessagingOptions } from "./types";
 
-// Minimal conditional logger; keeps bundle tiny.
+/**
+ * Conditional logger with two-level context: domain and action.
+ * domain: "client" | "hub"
+ * action: method or event name
+ */
 export function logIfEnabled(
   options: MessagingOptions | undefined,
-  context: string,
+  domain: Domain,
+  action: string,
   ...info: any[]
 ): void {
   if (!options?.enableLog) return;
-  // Single place to adjust formatting later.
-  console.log(`[iframe-storage:${context}]`, ...info);
+  if (options.enableLog !== "both" && options.enableLog !== domain) return;
+
+  console.log(`[iframe-storage:${domain}:${action}]`, ...info);
 }
