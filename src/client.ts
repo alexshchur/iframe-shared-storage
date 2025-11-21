@@ -31,12 +31,12 @@ type ClientOptions = {
     | {
         src: string;
         messagingOptions?: MessagingOptions;
-        initializationTimeoutMs?: number;
+        iframeReadyTimeoutMs?: number;
       }
     | {
         id: string;
         messagingOptions?: MessagingOptions;
-        initializationTimeoutMs?: number;
+        iframeReadyTimeoutMs?: number;
       };
 };
 
@@ -45,9 +45,12 @@ const DEFAULT_INITIALIZATION_TIMEOUT_MS = 1000;
 export function constructClient({ iframe }: ClientOptions): Client {
   const {
     messagingOptions,
-    initializationTimeoutMs = DEFAULT_INITIALIZATION_TIMEOUT_MS,
+    iframeReadyTimeoutMs = DEFAULT_INITIALIZATION_TIMEOUT_MS,
   } = iframe;
-  const { postMessage, ready: iframeReady } = createIframePostMessage(iframe);
+  const { postMessage, ready: iframeReady } = createIframePostMessage(
+    iframe,
+    iframeReadyTimeoutMs
+  );
   const callerOptions = { postMessage };
 
   // Unified dynamic caller to reduce repetition.
@@ -61,8 +64,8 @@ export function constructClient({ iframe }: ClientOptions): Client {
       args
     );
 
-    // before calling make sure iframe is inited
-    await awaitWithTimeout(iframeReady, initializationTimeoutMs, () => {
+    // before calling make sure iframe is inited. Maybe must be a separate timeout?
+    await awaitWithTimeout(iframeReady, iframeReadyTimeoutMs, () => {
       throw new Error(
         `Iframe storage hub did not respond within timeout when calling method "${method}".`
       );
@@ -116,7 +119,10 @@ export function constructClient({ iframe }: ClientOptions): Client {
   };
 }
 
-function createIframePostMessage(iframeOptions: ClientOptions["iframe"]): {
+function createIframePostMessage(
+  iframeOptions: ClientOptions["iframe"],
+  iframeReadyTimeoutMs: number
+): {
   postMessage: typeof window.postMessage;
   ready: Promise<void>;
 } {
@@ -132,7 +138,7 @@ function createIframePostMessage(iframeOptions: ClientOptions["iframe"]): {
 
   return {
     postMessage: contentWindow.postMessage.bind(contentWindow),
-    ready: waitForHubReady(iframe),
+    ready: waitForHubReady(iframe, iframeReadyTimeoutMs),
   };
 }
 
@@ -193,11 +199,14 @@ function hideIframe(iframe: HTMLIFrameElement): void {
   iframe.style.pointerEvents = "none";
 }
 
-const IFRAME_READY_TIMEOUT_MS = 20000;
+const IFRAME_READY_TIMEOUT_MS = 1000;
 const IFRAME_READY_PING_INTERVAL_MS = 250;
 const iframeReadyPromises = new WeakMap<HTMLIFrameElement, Promise<void>>();
 
-function waitForHubReady(iframe: HTMLIFrameElement): Promise<void> {
+function waitForHubReady(
+  iframe: HTMLIFrameElement,
+  timeoutMs: number
+): Promise<void> {
   const existing = iframeReadyPromises.get(iframe);
   if (existing) {
     return existing;
@@ -236,7 +245,7 @@ function waitForHubReady(iframe: HTMLIFrameElement): Promise<void> {
           }" to finish loading.`
         )
       );
-    }, IFRAME_READY_TIMEOUT_MS);
+    }, timeoutMs);
 
     const intervalId = window.setInterval(
       sendPing,
