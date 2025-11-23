@@ -58,10 +58,9 @@ function captureSnapshot(): WindowSnapshot {
 
 function applyWindow(win: WindowLike) {
   for (const key of WINDOW_KEYS) {
-    (globalThis as Record<string, unknown>)[key] = (win as Record<
-      string,
-      unknown
-    >)[key];
+    (globalThis as Record<string, unknown>)[key] = (
+      win as Record<string, unknown>
+    )[key];
   }
   currentWindow = win;
 }
@@ -177,7 +176,13 @@ describe("client and hub realistic communication", () => {
       useWindow(child, () => initHub());
 
       const client = constructClient({
-        iframe: { id: IFRAME_ID, iframeReadyTimeoutMs: 500 },
+        iframe: {
+          id: IFRAME_ID,
+          iframeReadyTimeoutMs: 500,
+          messagingOptions: {
+            // enableLog: "both",
+          },
+        },
       });
 
       await client.localStorage.setItem("foo", "bar");
