@@ -17,6 +17,7 @@
 
     // Other Outputs
     "sourceMap": true,
+    "inlineSources": true, // avoid shipping src by adding packaage.json "files" entry (dist, src)
     "declaration": true,
     "declarationMap": true,
 
