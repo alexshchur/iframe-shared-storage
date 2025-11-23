@@ -6,6 +6,7 @@
 
     const remoteOriginStorageclient = IframeStorage.constructClient({
         iframe: {
+            // src: "http://127.0.0.1:5101/hub.html", -- for local testing
             src: "https://iframe-shared-storage.vercel.app/hub.html",
             messagingOptions: { enableLog: 'both' },
             iframeReadyTimeoutMs: 1000
