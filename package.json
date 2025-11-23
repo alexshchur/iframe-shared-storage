@@ -14,7 +14,9 @@
     "test:e2e": "playwright test",
     "serve:client": "serve -l 5100 -n -c configs/serve.client.json .",
     "serve:hub": "serve -l 5101 -n -c configs/serve.hub.json .",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test:all": "npm run ts:check && npm run test && npm run build:browser && npm run test:e2e",
+    "verify": "npm run ts:check && npm run build && npm run test && npm run test:e2e"
   },
   "author": "hi@alexeyshchur.com",
   "license": "ISC",
