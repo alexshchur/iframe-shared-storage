@@ -40,5 +40,6 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
-  }
+  },
+  "include": ["src"] // avoid including jest files that are one level lower and cause the dist folder structure to chagne (i.e. all is added into src/, not inthe root)
 }
