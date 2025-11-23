@@ -1,6 +1,14 @@
 {
   "name": "iframe-shared-storage",
-  "version": "1.0.25",
+  "version": "1.0.26",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexeyshchur/iframe-shared-storage.git"
+  },
+  "homepage": "https://github.com/alexeyshchur/iframe-shared-storage#readme",
+  "bugs": {
+    "url": "https://github.com/alexeyshchur/iframe-shared-storage/issues"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

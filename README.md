@@ -58,7 +58,7 @@ await storage.indexedDBKeyval?.set("heavy", JSON.stringify({ ... }));
 
 For non-bundled apps, the same API is available via the `IframeStorage` global that `dist/browser.js` defines:
 ```html
-<script src="https://cdn.example.com/iframe-storage/dist/browser.js"></script>
+<script src="https://cdn.example.com/iframe-shared-storage/dist/browser.js"></script>
 <script>
   const storage = IframeStorage.constructClient({ iframe: { src: "…" } });
 </script>
