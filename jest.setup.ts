@@ -1,25 +1,21 @@
-import { TextDecoder, TextEncoder } from "util";
+import {
+  TextDecoder as NodeTextDecoder,
+  TextEncoder as NodeTextEncoder,
+} from "util";
 import "fake-indexeddb/auto";
 
-declare global {
-  // eslint-disable-next-line no-var
-  var TextEncoder: typeof TextEncoder | undefined;
-  // eslint-disable-next-line no-var
-  var TextDecoder: typeof TextDecoder | undefined;
-}
-
 if (typeof globalThis.TextEncoder === "undefined") {
-  (
-    globalThis as typeof globalThis & {
-      TextEncoder: typeof TextEncoder;
-    }
-  ).TextEncoder = TextEncoder;
+  Object.defineProperty(globalThis, "TextEncoder", {
+    configurable: true,
+    writable: true,
+    value: NodeTextEncoder as unknown as typeof globalThis.TextEncoder,
+  });
 }
 
 if (typeof globalThis.TextDecoder === "undefined") {
-  (
-    globalThis as typeof globalThis & {
-      TextDecoder: typeof TextDecoder;
-    }
-  ).TextDecoder = TextDecoder;
+  Object.defineProperty(globalThis, "TextDecoder", {
+    configurable: true,
+    writable: true,
+    value: NodeTextDecoder as unknown as typeof globalThis.TextDecoder,
+  });
 }
