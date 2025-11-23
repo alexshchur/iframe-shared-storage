@@ -9,6 +9,7 @@
     "build:browser": "esbuild src/index.ts --bundle --format=iife --global-name=IframeStorage --outfile=dist/browser.js",
     "build:browser:watch": "npm run build:browser -- --watch",
     "build:module:watch": "npm run build:module -- --watch",
+    "build:watch": "npm run build:module:watch & npm run build:browser:watch #NB: this command only runs on a POSIX shell",
     "ts:check": "tsc --noEmit",
     "test": "jest",
     "test:e2e": "playwright test",
