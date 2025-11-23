@@ -37,30 +37,55 @@ async function readResult(page: Page, origin: string): Promise<TestResult> {
 }
 
 test.describe("iframe hub headers", () => {
-  test("allows communication when the hub is explicitly cross-origin friendly", async ({
+  test('fails by default, if COEP / COOP headers are not set on the hub"', async ({
     page,
   }) => {
     await withServers({}, async ({ clientOrigin }) => {
       const result = await readResult(page, clientOrigin);
-      expect(result).toEqual({ success: true, value: "value-from-client" });
+      expect(result.success).toBe(false);
+
+      if (result.success)
+        throw new Error("Testing logic error. Success must be false here");
+
+      expect(result.message).toMatch(/initialize|blocked/i);
     });
   });
-
-  test("fails the handshake if COEP requires corp but the hub is same-origin only", async ({
+  test("allows communication when the hub is explicitly cross-origin friendly", async ({
     page,
   }) => {
     await withServers(
       {
         hubHeaders: {
+          // Cross-Origin-Embedder-Policy: unsafe-none | require-corp | credentialless https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cross-Origin-Embedder-Policy
           "Cross-Origin-Embedder-Policy": "require-corp",
+        },
+      },
+      async ({ clientOrigin }) => {
+        const result = await readResult(page, clientOrigin);
+        expect(result).toEqual({ success: true, value: "value-from-client" });
+      }
+    );
+  });
+
+  test("fails the handshake if hub enforces CORP same-origin while they're not", async ({
+    page,
+  }) => {
+    await withServers(
+      {
+        hubHeaders: {
           "Cross-Origin-Resource-Policy": "same-origin",
+          "Cross-Origin-Embedder-Policy": "require-corp",
         },
       },
       async ({ clientOrigin }) => {
         const result = await readResult(page, clientOrigin);
         expect(result.success).toBe(false);
-        if (!result.success)
-          expect(result.message).toMatch(/initialize|blocked/i);
+
+        // to calm TS
+        if (result.success)
+          throw new Error("Testing logic error. Success must be false here");
+
+        expect(result.message).toMatch(/initialize|blocked/i);
       }
     );
   });
@@ -70,7 +95,7 @@ test.describe("iframe hub headers", () => {
       {
         hubHeaders: {
           "Cross-Origin-Resource-Policy": "cross-origin",
-          "Cross-Origin-Embedder-Policy": "credentialless",
+          "Cross-Origin-Embedder-Policy": "require-corp",
           "X-Frame-Options": "DENY",
         },
       },

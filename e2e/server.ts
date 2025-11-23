@@ -8,6 +8,9 @@ const HUB_HTML_PATH = path.join(PROJECT_ROOT, "hub.html");
 
 const DEFAULT_HUB_HEADERS: Record<string, string> = {
   "Cross-Origin-Resource-Policy": "cross-origin",
+};
+
+const DEFAULT_CLIENT_HEADERS: Record<string, string> = {
   "Cross-Origin-Embedder-Policy": "credentialless",
 };
 
@@ -15,6 +18,7 @@ export const TEST_RESULT_KEY = "__iframeStorageE2EResult__";
 
 export type ServerOptions = {
   hubHeaders?: Record<string, string>;
+  clientHeaders?: Record<string, string>;
 };
 
 export type RunningServers = {
@@ -27,6 +31,10 @@ export async function startTestServers(
   options: ServerOptions = {}
 ): Promise<RunningServers> {
   const hubHeaders = { ...DEFAULT_HUB_HEADERS, ...(options.hubHeaders ?? {}) };
+  const clientHeaders = {
+    ...DEFAULT_CLIENT_HEADERS,
+    ...(options.clientHeaders ?? {}),
+  };
   const hubApp = express();
   hubApp.use("/dist", express.static(DIST_DIR));
   hubApp.get("/hub.html", (req, res) => {
@@ -43,7 +51,10 @@ export async function startTestServers(
   const clientApp = express();
   clientApp.use("/dist", express.static(DIST_DIR));
   clientApp.get("/", (req, res) => {
-    res.set("Cache-Control", "no-store");
+    res.set({
+      "Cache-Control": "no-store",
+      ...clientHeaders,
+    });
     res.type("html");
     res.send(renderClientHtml(`${hubOrigin}/hub.html`));
   });
@@ -117,7 +128,9 @@ function renderClientHtml(hubUrl: string): string {
 </html>`;
 }
 
-function listen(app: express.Express): Promise<{ server: http.Server; port: number }> {
+function listen(
+  app: express.Express
+): Promise<{ server: http.Server; port: number }> {
   return new Promise((resolve, reject) => {
     const server = app.listen(0, "127.0.0.1", () => {
       const address = server.address();
