@@ -1,10 +1,14 @@
 import express from "express";
 import path from "path";
 import http from "http";
+import fs from "fs";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 const DIST_DIR = path.join(PROJECT_ROOT, "dist");
 const HUB_HTML_PATH = path.join(PROJECT_ROOT, "hub.html");
+const E2E_DIR = path.join(PROJECT_ROOT, "e2e");
+const CLIENT_TEMPLATE_PATH = path.join(E2E_DIR, "client-harness.html");
+const CLIENT_TEMPLATE = fs.readFileSync(CLIENT_TEMPLATE_PATH, "utf8");
 
 const DEFAULT_HUB_HEADERS: Record<string, string> = {
   "Cross-Origin-Resource-Policy": "cross-origin",
@@ -15,6 +19,9 @@ const DEFAULT_CLIENT_HEADERS: Record<string, string> = {
 };
 
 export const TEST_RESULT_KEY = "__iframeStorageE2EResult__";
+export const HARNESS_STORAGE_KEY = "iframe-storage-e2e";
+export const HARNESS_STORAGE_VALUE = "value-from-client";
+export const HARNESS_IFRAME_TIMEOUT_MS = 700;
 
 export type ServerOptions = {
   hubHeaders?: Record<string, string>;
@@ -75,57 +82,14 @@ export async function startTestServers(
 }
 
 function renderClientHtml(hubUrl: string): string {
-  const storageKey = "iframe-storage-e2e";
-  const storageValue = "value-from-client";
-  const iframeTimeoutMs = 700;
-
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="Cache-Control" content="no-store" />
-    <title>Iframe storage e2e</title>
-  </head>
-  <body>
-    <div>Client harness</div>
-    <script src="/dist/browser.js"></script>
-    <script>
-      (function () {
-        const HUB_URL = ${JSON.stringify(hubUrl)};
-        const RESULT_KEY = ${JSON.stringify(TEST_RESULT_KEY)};
-        const STORAGE_KEY = ${JSON.stringify(storageKey)};
-        const STORAGE_VALUE = ${JSON.stringify(storageValue)};
-        const IFRAME_TIMEOUT_MS = ${iframeTimeoutMs};
-
-        function report(result) {
-          window[RESULT_KEY] = result;
-        }
-
-        async function run() {
-          try {
-            const client = IframeStorage.constructClient({
-              iframe: {
-                src: HUB_URL,
-                iframeReadyTimeoutMs: IFRAME_TIMEOUT_MS,
-              },
-            });
-            await client.localStorage.setItem(STORAGE_KEY, STORAGE_VALUE);
-            const value = await client.localStorage.getItem(STORAGE_KEY);
-            report({ success: true, value });
-          } catch (error) {
-            const message =
-              error && typeof error === "object" && "message" in error
-                ? error.message
-                : String(error);
-            report({ success: false, message });
-          }
-        }
-
-        run();
-      })();
-    </script>
-  </body>
-</html>`;
+  const config = {
+    hubUrl,
+    resultKey: TEST_RESULT_KEY,
+    storageKey: HARNESS_STORAGE_KEY,
+    storageValue: HARNESS_STORAGE_VALUE,
+    iframeTimeoutMs: HARNESS_IFRAME_TIMEOUT_MS,
+  };
+  return CLIENT_TEMPLATE.replace("__HARNESS_CONFIG__", JSON.stringify(config));
 }
 
 function listen(

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <title>Iframe storage e2e</title>
+  </head>
+  <body>
+    <div>Client harness</div>
+    <script id="harness-config" type="application/json">
+      __HARNESS_CONFIG__
+    </script>
+    <script src="/dist/browser.js"></script>
+    <script>
+      (function () {
+        const configEl = document.getElementById("harness-config");
+        let config = {};
+        try {
+          const text = (configEl && configEl.textContent) || "{}";
+          config = JSON.parse(text);
+        } catch (error) {
+          console.error("Failed to parse harness config", error);
+        }
+
+        const resultKey = config.resultKey;
+
+        function report(result) {
+          if (resultKey) {
+            window[resultKey] = result;
+          }
+        }
+
+        async function run() {
+          try {
+            const client = IframeStorage.constructClient({
+              iframe: {
+                src: config.hubUrl,
+                iframeReadyTimeoutMs: config.iframeTimeoutMs,
+              },
+            });
+            await client.localStorage.setItem(
+              config.storageKey,
+              config.storageValue
+            );
+            const value = await client.localStorage.getItem(config.storageKey);
+            report({ success: true, value });
+          } catch (error) {
+            const message =
+              error && typeof error === "object" && "message" in error
+                ? error.message
+                : String(error);
+            report({ success: false, message });
+          }
+        }
+
+        run();
+      })();
+    </script>
+  </body>
+</html>

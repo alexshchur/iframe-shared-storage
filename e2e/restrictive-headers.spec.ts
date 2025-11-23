@@ -2,6 +2,7 @@ import { test, expect, Page } from "@playwright/test";
 import {
   startTestServers,
   TEST_RESULT_KEY,
+  HARNESS_STORAGE_VALUE,
   type RunningServers,
   type ServerOptions,
 } from "./server";
@@ -62,7 +63,10 @@ test.describe("iframe hub headers", () => {
       },
       async ({ clientOrigin }) => {
         const result = await readResult(page, clientOrigin);
-        expect(result).toEqual({ success: true, value: "value-from-client" });
+        expect(result).toEqual({
+          success: true,
+          value: HARNESS_STORAGE_VALUE,
+        });
       }
     );
   });
