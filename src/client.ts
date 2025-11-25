@@ -63,7 +63,7 @@ export function constructClient({ iframe }: ClientOptions): Client {
       "client",
       method,
       "before-postmessage",
-      args
+      JSON.stringify(args).substring(0, 200)
     );
 
     // Ensure the hub is initialized before calling the RPC.

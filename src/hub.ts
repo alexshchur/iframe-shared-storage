@@ -104,7 +104,7 @@ export function initHub() {
           "hub",
           methodName,
           "before_call",
-          loggedArgs
+          JSON.stringify(loggedArgs).substring(0, 200)
         );
         const result = await methodImpl(...args);
         logIfEnabled(
